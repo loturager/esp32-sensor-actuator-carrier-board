@@ -20,49 +20,46 @@ The goal is to keep uncertainty visible and controlled before freezing the archi
 
 ---
 
-## O1 — Exact ESP32 DevKit 30-pin Reference
+## O1 — ESP32 DevKit 30-pin Footprint Strategy
 
-**Status:** Open
+**Status:** Frozen
 
-### Question
+### Decision
 
-Which exact ESP32 DevKit 30-pin board should be used as the mechanical and pinout reference for RevA?
+Use a generic 30-pin ESP32 DevKit footprint strategy with documented compatibility limitation.
 
-### Why this matters
+### Frozen RevA Definition
 
-Different ESP32 DevKit boards may have different:
+- Target module type: ESP32 DevKit-style development board.
+- Pin count: 30 pins.
+- Header strategy: two 1x15 female headers.
+- Compatibility scope: limited to DevKit boards matching the selected 30-pin header spacing, pinout and mechanical envelope.
+- 30-pin and 38-pin DevKit boards will not be supported on the same RevA PCB.
+- Silkscreen must clearly indicate module orientation.
+- A visible antenna keepout region should be marked whenever possible.
+- Exact module mechanical dimensions and pinout must be confirmed before fabrication.
 
-- Board width.
-- Header spacing.
-- Pin naming.
-- 5 V input pin location.
-- 3V3 pin location.
-- GND pin locations.
-- Boot/strapping pin exposure.
-- USB connector overhang.
-- Mechanical clearance requirements.
+### Fabrication Warning
 
-### Required Output
+Client must confirm the exact ESP32 DevKit mechanical dimensions and pinout before fabrication.
 
-Before schematic and footprint finalization, document:
+### Justification
 
-- Reference board name.
-- Pin count.
-- Header spacing.
-- Board width.
-- Pinout source.
-- 5 V input pin.
-- 3V3 output pin.
-- GND pins.
-- Pins to avoid for boot/strapping reasons.
+Many low-cost ESP32 DevKit boards exist in the market, and they may differ in width, header spacing, pin naming, USB connector position, antenna area and mechanical envelope.
 
-### Current Direction
+A generic 30-pin DevKit footprint strategy is appropriate for RevA because it keeps the design realistic for freelance-style projects while making the compatibility limitation explicit.
 
-Use a common ESP32 DevKit 30-pin development board as the RevA reference.
+This avoids overpromising universal support and keeps the board scope controlled.
+
+### Impact
+
+This decision allows the architecture to progress while keeping fabrication responsibility clear.
+
+It does not resolve the MOSFET GPIO selection or the MOSFET part number.
 
 ### Owner
 
-Technical decision / hardware architecture.
+Governance / hardware architecture.
 
 ---
 
@@ -264,7 +261,7 @@ Governance / hardware architecture.
 
 | ID | Decision | Status | Current Direction |
 |---|---|---|---|
-| O1 | Exact ESP32 DevKit 30-pin reference | Open | Select common 30-pin DevKit reference |
+| O1 | ESP32 DevKit 30-pin footprint strategy | Frozen | Generic 30-pin DevKit footprint with documented compatibility limitation |
 | O2 | GPIO for MOSFET gate control | Open | Select safe output GPIO |
 | O3 | Logic-level N-channel MOSFET part number | Open | Select MOSFET with low RDS(on) at 3.3 V |
 | O4 | Load connector type | Frozen | 2-pin 5.08 mm terminal block / KRE |
@@ -276,7 +273,7 @@ Governance / hardware architecture.
 
 Architecture RevA v0.1 should not be marked as Frozen until:
 
-- O1 is resolved or approved for draft schematic.
+- O1 is frozen. ✅
 - O2 is resolved or approved for draft schematic.
 - O3 is resolved or approved for draft schematic.
 - O4 is frozen. ✅
@@ -285,9 +282,9 @@ Architecture RevA v0.1 should not be marked as Frozen until:
 Current freeze progress:
 
 ```text
+O1 — Frozen
 O4 — Frozen
 O5 — Frozen
-O1 — Open
 O2 — Open
 O3 — Open
 ```
