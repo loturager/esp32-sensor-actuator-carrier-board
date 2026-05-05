@@ -63,50 +63,57 @@ Governance / hardware architecture.
 
 ---
 
-## O2 — GPIO Selection for MOSFET Gate Control
+## O2 — MOSFET Gate GPIO
 
-**Status:** Open
+**Status:** Frozen
 
-### Question
+### Decision
 
-Which ESP32 GPIO should drive the low-side MOSFET gate?
+Use ESP32 `GPIO26` as the MOSFET gate control signal for RevA.
 
-### Why this matters
+### Frozen RevA Definition
 
-The MOSFET gate control pin must avoid unsafe ESP32 boot behavior.
+- Selected GPIO: `GPIO26`
+- Gate net name: `MOSFET_GATE`
+- Gate series resistor: `100 Ω`
+- Gate pulldown resistor: `100 kΩ`
+- Default safe state: MOSFET OFF during boot/reset
+- Firmware shall configure GPIO26 as output LOW during initialization before enabling load control.
 
-Some ESP32 pins are related to:
+### Gate Drive Interface
 
-- Boot mode selection.
-- Strapping configuration.
-- Flash interface.
-- Input-only functionality.
-- Boot-time logic states.
+```text
+GPIO26 ── 100 Ω ── MOSFET_GATE
+                    |
+                  100 kΩ
+                    |
+                   GND
+```
 
-Choosing the wrong GPIO may cause:
+### Rationale
 
-- Boot failure.
-- Unexpected load activation during reset.
-- Unstable output behavior.
-- Difficult debugging.
+GPIO26 is a general-purpose output-capable ESP32 GPIO suitable for driving a low-side N-channel MOSFET gate through a series resistor.
 
-### Required Output
+It is not one of the typical ESP32 boot/strapping pins, is not input-only and is not used as UART0 programming/debug by default.
 
-Before schematic finalization, document:
+### Pins Intentionally Avoided
 
-- Selected GPIO.
-- Reason for selection.
-- Pins intentionally avoided.
-- Boot/reset behavior.
-- Whether a gate pulldown is required.
+- GPIO0, GPIO2, GPIO5, GPIO12, GPIO15: boot/strapping-sensitive pins.
+- GPIO34, GPIO35, GPIO36, GPIO39: input-only pins.
+- GPIO1, GPIO3: UART0 programming/debug pins.
+- GPIO6, GPIO7, GPIO8, GPIO9, GPIO10, GPIO11: usually connected to SPI flash and not suitable for general GPIO use.
+- GPIO16, GPIO17: avoid unless the selected module confirms they are free, because some modules may use them for PSRAM or internal functions.
+- GPIO4: not selected for RevA; kept available/reserved to avoid unnecessary board-variant ambiguity.
 
-### Current Direction
+### Compatibility Note
 
-Use a safe output-capable GPIO that does not interfere with ESP32 boot/strapping behavior.
+For the generic 30-pin ESP32 DevKit strategy, the exact DevKit pinout must still be confirmed before fabrication.
+
+Client must confirm the exact ESP32 DevKit mechanical dimensions and pinout before fabrication.
 
 ### Owner
 
-Technical decision / embedded hardware.
+Governance / embedded hardware.
 
 ---
 
@@ -262,7 +269,7 @@ Governance / hardware architecture.
 | ID | Decision | Status | Current Direction |
 |---|---|---|---|
 | O1 | ESP32 DevKit 30-pin footprint strategy | Frozen | Generic 30-pin DevKit footprint with documented compatibility limitation |
-| O2 | GPIO for MOSFET gate control | Open | Select safe output GPIO |
+| O2 | MOSFET gate GPIO | Frozen | GPIO26 with 100 Ω gate resistor and 100 kΩ pulldown |
 | O3 | Logic-level N-channel MOSFET part number | Open | Select MOSFET with low RDS(on) at 3.3 V |
 | O4 | Load connector type | Frozen | 2-pin 5.08 mm terminal block / KRE |
 | O5 | MOSFET output LED strategy | Frozen | Optional/DNP footprint |
@@ -271,10 +278,12 @@ Governance / hardware architecture.
 
 ## Architecture Freeze Requirement
 
+## Architecture Freeze Requirement
+
 Architecture RevA v0.1 should not be marked as Frozen until:
 
 - O1 is frozen. ✅
-- O2 is resolved or approved for draft schematic.
+- O2 is frozen. ✅
 - O3 is resolved or approved for draft schematic.
 - O4 is frozen. ✅
 - O5 is frozen. ✅
@@ -283,15 +292,13 @@ Current freeze progress:
 
 ```text
 O1 — Frozen
+O2 — Frozen
 O4 — Frozen
 O5 — Frozen
-O2 — Open
 O3 — Open
-```
 
 Current architecture state:
 
-```text
 Architecture RevA v0.1 — Ready for Freeze Review
 KiCad schematic — Not released
 ```
