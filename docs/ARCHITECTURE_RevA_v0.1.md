@@ -65,7 +65,7 @@ This revision prioritizes clear architecture, manufacturability, safe prototypin
         +--> [UART Connector]          |
         +--> [GPIO Connector]          |
         |                              |
-        +--> [MOSFET Gate Control]     |
+        +--> [GPIO26 MOSFET Gate Control]
                        |              |
                        v              |
               [Low-side MOSFET] <-----+
@@ -226,7 +226,7 @@ It provides:
 - GPIO control.
 - I2C interface.
 - UART interface.
-- MOSFET gate control signal.
+- MOSFET gate control signal through GPIO26.
 - 3.3 V logic rail output for external low-current logic use.
 
 ### Frozen Footprint Strategy
@@ -266,7 +266,9 @@ The ESP32 DevKit block connects to:
 - I2C connector.
 - UART connector.
 - GPIO connector.
-- MOSFET gate control signal.
+- MOSFET gate control signal through GPIO26.
+
+---
 
 ## 7. 5 V, 3V3 and GND Rails
 
@@ -415,7 +417,9 @@ The connector must include at least:
 
 #### Design Notes
 
-GPIO selection depends on the final ESP32 DevKit pinout.
+GPIO selection for the expansion connector depends on the final ESP32 DevKit pinout.
+
+The MOSFET gate GPIO is already frozen separately as GPIO26.
 
 ---
 
@@ -430,7 +434,7 @@ Drive an external load using an N-channel MOSFET in low-side configuration.
 - Load voltage: up to 12 V.
 - Load current: up to 1 A.
 - MOSFET type: N-channel logic-level.
-- Gate drive: ESP32 GPIO at 3.3 V.
+- Gate drive: ESP32 GPIO26 at 3.3 V.
 - Flyback diode required for inductive loads.
 - Load connector required.
 
@@ -451,7 +455,7 @@ MOSFET Source
 GND
 ```
 
-The ESP32 controls the MOSFET gate through a gate resistor.
+The ESP32 controls the MOSFET gate through GPIO26 and a gate resistor.
 
 Recommended support parts:
 
@@ -459,6 +463,31 @@ Recommended support parts:
 - Gate pulldown resistor.
 - Flyback diode across load connector.
 - Optional output LED / DNP.
+
+### MOSFET Gate Control
+
+The low-side MOSFET output is controlled by ESP32 `GPIO26`.
+
+The gate drive interface shall include:
+
+- `100 Ω` series resistor between GPIO26 and the MOSFET gate.
+- `100 kΩ` pulldown resistor from gate to GND.
+- Gate net named `MOSFET_GATE`.
+- Switched load net named `LOAD_SW`.
+
+The pulldown resistor ensures that the MOSFET remains OFF during ESP32 boot/reset or while the GPIO is still high-impedance.
+
+Firmware shall configure GPIO26 as output LOW during initialization before enabling load control.
+
+### Gate Drive Interface
+
+```text
+GPIO26 ── 100 Ω ── MOSFET_GATE
+                    |
+                  100 kΩ
+                    |
+                   GND
+```
 
 ### Load Connector
 
@@ -495,10 +524,9 @@ LOAD-
 
 The schematic should preferably use `LOAD_SW` instead of `LOAD-` for the switched node to make the circuit behavior clearer during review and debugging.
 
-### Open Decisions
+### Remaining Open Decision
 
 - Exact MOSFET part number.
-- Exact GPIO used for the MOSFET gate.
 
 ---
 
@@ -518,7 +546,7 @@ The following test points should be included in RevA:
 | TP_5V | 5 V | Verify buck output |
 | TP_3V3 | 3.3 V | Verify ESP32 logic rail |
 | TP_GND | GND | Scope/multimeter reference |
-| TP_GATE | MOSFET gate | Verify control signal |
+| TP_GATE | MOSFET_GATE | Verify GPIO26 gate control signal |
 | TP_LOAD | MOSFET drain / LOAD_SW | Verify switched load node |
 
 ### Design Notes
@@ -616,10 +644,10 @@ Mounting hole diameter and keepout must be selected before layout.
 | ESP32 DevKit | I2C connector | SDA, SCL, 3V3, GND | 3.3 V logic |
 | ESP32 DevKit | UART connector | TX, RX, GND, optional VCC | 3.3 V logic only |
 | ESP32 DevKit | GPIO connector | GPIO signals, 3V3, GND | General expansion |
-| ESP32 DevKit | MOSFET output | Gate signal, GND | Gate driven at 3.3 V |
+| ESP32 DevKit | MOSFET output | GPIO26, MOSFET_GATE, GND | Gate driven at 3.3 V |
 | MOSFET output | Load connector | LOAD_SW, LOAD+ | Low-side switching |
 | Power rails | Test points | VIN, 5V, 3V3, GND | Debug access |
-| MOSFET output | Test points | GATE, LOAD_SW | Output validation |
+| MOSFET output | Test points | MOSFET_GATE, LOAD_SW | Output validation |
 
 ---
 
@@ -630,7 +658,7 @@ The following decisions must remain visible until resolved or frozen.
 | ID | Decision | Current Status | Recommended Direction |
 |---|---|---|---|
 | O1 | ESP32 DevKit 30-pin footprint strategy | Frozen | Generic 30-pin DevKit footprint with documented compatibility limitation |
-| O2 | GPIO for MOSFET gate | Open | Use safe GPIO, avoid boot/strapping pins |
+| O2 | MOSFET gate GPIO | Frozen | GPIO26 with 100 Ω gate resistor and 100 kΩ pulldown |
 | O3 | Exact MOSFET part number | Open | N-channel logic-level MOSFET with low RDS(on) at VGS = 3.3 V |
 | O4 | Load connector type | Frozen | 2-pin 5.08 mm terminal block / KRE |
 | O5 | MOSFET output LED | Frozen | Include footprint as optional/DNP |
@@ -649,17 +677,19 @@ The schematic phase may start only when the following criteria are satisfied.
 - Power flow is clear:
   - VIN -> Protection -> Buck -> 5 V -> ESP32.
   - VIN -> Load path -> MOSFET -> GND.
-- ESP32 DevKit 30-pin reference model is selected or a temporary generic footprint strategy is approved.
+- ESP32 DevKit 30-pin footprint strategy is frozen with documented compatibility limitation.
 - MOSFET output topology is confirmed as low-side N-channel.
+- MOSFET gate GPIO is frozen as GPIO26.
+- MOSFET gate drive interface is defined with 100 Ω series resistor and 100 kΩ pulldown.
 - Load connector type is frozen.
 - Test point list is accepted.
 - Power LED is mandatory.
 - MOSFET output LED status is frozen as optional/DNP.
+- KiCad schematic remains not released until governance approval.
 
 ### Strongly Recommended Before Schematic
 
 - Candidate MOSFET selected.
-- Candidate GPIO selected.
 - Candidate buck module footprint selected.
 - Connector families selected.
 - Mounting hole size selected.
@@ -671,9 +701,11 @@ The following items are marked as either Frozen or Approved for Draft Schematic:
 
 | Item | Required Status |
 |---|---|
-| ESP32 DevKit reference | Frozen or approved generic |
+| ESP32 DevKit footprint strategy | Frozen |
 | Buck module interface | Frozen |
 | MOSFET topology | Frozen |
+| MOSFET gate GPIO | Frozen |
+| MOSFET part number | Frozen or approved for draft |
 | Load connector | Frozen |
 | I2C connector pinout | Frozen |
 | UART connector pinout | Frozen |
@@ -681,6 +713,7 @@ The following items are marked as either Frozen or Approved for Draft Schematic:
 | Test points | Frozen |
 | LED strategy | Frozen |
 | Mounting holes | Approved |
+| Governance release for KiCad schematic | Required |
 
 ---
 
@@ -700,19 +733,20 @@ Freeze review progress:
 | Decision | Status |
 |---|---|
 | O1 — ESP32 DevKit 30-pin footprint strategy | Frozen |
-| O2 — GPIO for MOSFET gate | Open |
+| O2 — MOSFET gate GPIO | Frozen |
 | O3 — Exact MOSFET part number | Open |
 | O4 — Load connector type | Frozen |
 | O5 — MOSFET output LED | Frozen |
 
-Architecture RevA v0.1 should only be marked as Frozen after O2 and O3 are resolved or explicitly approved by governance for schematic draft.
+Architecture RevA v0.1 should only be marked as Frozen after O3 is resolved or explicitly approved by governance for schematic draft.
+
 ---
 
 ## 17. Next Actions
 
-- Select a safe GPIO for MOSFET gate control.
 - Select candidate N-channel logic-level MOSFET.
+- Update `OPEN_DECISIONS.md` after O3 is selected or approved for draft schematic.
 - Keep architecture status as `Ready for Freeze Review`.
 - Keep KiCad schematic status as `Not released`.
-- Freeze architecture only after O2 and O3 are resolved or approved for schematic draft.
+- Freeze architecture only after O3 is resolved or approved for schematic draft.
 - Start KiCad schematic draft only after governance release.
