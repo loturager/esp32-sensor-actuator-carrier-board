@@ -68,7 +68,7 @@ This revision prioritizes clear architecture, manufacturability, safe prototypin
         +--> [GPIO26 MOSFET Gate Control]
                        |              |
                        v              |
-              [Low-side MOSFET] <-----+
+              [AO3400A Low-side MOSFET] <-----+
                        |
                        v
                      [GND]
@@ -434,6 +434,8 @@ Drive an external load using an N-channel MOSFET in low-side configuration.
 - Load voltage: up to 12 V.
 - Load current: up to 1 A.
 - MOSFET type: N-channel logic-level.
+- Primary MOSFET part number: AO3400A.
+- MOSFET package: SOT-23.
 - Gate drive: ESP32 GPIO26 at 3.3 V.
 - Flyback diode required for inductive loads.
 - Load connector required.
@@ -447,9 +449,9 @@ LOAD+
 External Load
   |
   v
-MOSFET Drain
+AO3400A MOSFET Drain
 
-MOSFET Source
+AO3400A MOSFET Source
   |
   v
 GND
@@ -457,12 +459,37 @@ GND
 
 The ESP32 controls the MOSFET gate through GPIO26 and a gate resistor.
 
-Recommended support parts:
+### MOSFET Selection
 
-- Gate resistor.
-- Gate pulldown resistor.
-- Flyback diode across load connector.
-- Optional output LED / DNP.
+The RevA low-side output MOSFET is frozen as `AO3400A`.
+
+Frozen MOSFET definition:
+
+- Reference designator: `Q1`
+- Primary part number: `AO3400A`
+- Type: N-channel MOSFET
+- Package: SOT-23
+- Function: low-side load switch
+- Load target: up to 12 V / 1 A
+- Gate drive: ESP32 `GPIO26` at 3.3 V
+- Gate net: `MOSFET_GATE`
+- Switched load net: `LOAD_SW`
+
+Equivalent part requirement:
+
+```text
+AO3400A or equivalent N-channel MOSFET with VDS ≥ 30 V and RDS(on) specified at VGS ≤ 2.5 V.
+```
+
+Power dissipation check for 1 A load:
+
+```text
+P = I² · R
+P = 1² · 0.048
+P = 48 mW
+```
+
+This dissipation is low for the RevA 1 A target load, assuming reasonable copper area around the MOSFET power pins and operation within the documented load limit.
 
 ### MOSFET Gate Control
 
@@ -488,6 +515,15 @@ GPIO26 ── 100 Ω ── MOSFET_GATE
                     |
                    GND
 ```
+
+### Required MOSFET Support Components
+
+The MOSFET output stage shall include:
+
+- `100 Ω` series resistor between GPIO26 and `MOSFET_GATE`.
+- `100 kΩ` pulldown resistor from `MOSFET_GATE` to GND.
+- Flyback diode for inductive loads.
+- Optional/DNP MOSFET output LED footprint.
 
 ### Load Connector
 
@@ -523,10 +559,6 @@ LOAD-
 ```
 
 The schematic should preferably use `LOAD_SW` instead of `LOAD-` for the switched node to make the circuit behavior clearer during review and debugging.
-
-### Remaining Open Decision
-
-- Exact MOSFET part number.
 
 ---
 
@@ -659,7 +691,7 @@ The following decisions must remain visible until resolved or frozen.
 |---|---|---|---|
 | O1 | ESP32 DevKit 30-pin footprint strategy | Frozen | Generic 30-pin DevKit footprint with documented compatibility limitation |
 | O2 | MOSFET gate GPIO | Frozen | GPIO26 with 100 Ω gate resistor and 100 kΩ pulldown |
-| O3 | Exact MOSFET part number | Open | N-channel logic-level MOSFET with low RDS(on) at VGS = 3.3 V |
+| O3 | Exact MOSFET part number | Frozen | AO3400A or equivalent, VDS ≥ 30 V, RDS(on) specified at VGS ≤ 2.5 V |
 | O4 | Load connector type | Frozen | 2-pin 5.08 mm terminal block / KRE |
 | O5 | MOSFET output LED | Frozen | Include footprint as optional/DNP |
 
@@ -680,6 +712,7 @@ The schematic phase may start only when the following criteria are satisfied.
 - ESP32 DevKit 30-pin footprint strategy is frozen with documented compatibility limitation.
 - MOSFET output topology is confirmed as low-side N-channel.
 - MOSFET gate GPIO is frozen as GPIO26.
+- MOSFET part number is frozen as AO3400A or approved equivalent.
 - MOSFET gate drive interface is defined with 100 Ω series resistor and 100 kΩ pulldown.
 - Load connector type is frozen.
 - Test point list is accepted.
@@ -689,7 +722,6 @@ The schematic phase may start only when the following criteria are satisfied.
 
 ### Strongly Recommended Before Schematic
 
-- Candidate MOSFET selected.
 - Candidate buck module footprint selected.
 - Connector families selected.
 - Mounting hole size selected.
@@ -705,7 +737,7 @@ The following items are marked as either Frozen or Approved for Draft Schematic:
 | Buck module interface | Frozen |
 | MOSFET topology | Frozen |
 | MOSFET gate GPIO | Frozen |
-| MOSFET part number | Frozen or approved for draft |
+| MOSFET part number | Frozen |
 | Load connector | Frozen |
 | I2C connector pinout | Frozen |
 | UART connector pinout | Frozen |
@@ -725,7 +757,7 @@ Current architecture status:
 |---|---|
 | Architecture RevA v0.1 | Ready for Freeze Review |
 | Ready for review | Yes |
-| Ready to freeze | Not yet |
+| Ready to freeze | After final consistency review |
 | Ready for KiCad schematic | Not yet |
 
 Freeze review progress:
@@ -734,19 +766,17 @@ Freeze review progress:
 |---|---|
 | O1 — ESP32 DevKit 30-pin footprint strategy | Frozen |
 | O2 — MOSFET gate GPIO | Frozen |
-| O3 — Exact MOSFET part number | Open |
+| O3 — Exact MOSFET part number | Frozen |
 | O4 — Load connector type | Frozen |
 | O5 — MOSFET output LED | Frozen |
 
-Architecture RevA v0.1 should only be marked as Frozen after O3 is resolved or explicitly approved by governance for schematic draft.
+Architecture RevA v0.1 is ready for final consistency review before being marked as Frozen.
 
 ---
 
 ## 17. Next Actions
 
-- Select candidate N-channel logic-level MOSFET.
-- Update `OPEN_DECISIONS.md` after O3 is selected or approved for draft schematic.
-- Keep architecture status as `Ready for Freeze Review`.
-- Keep KiCad schematic status as `Not released`.
-- Freeze architecture only after O3 is resolved or approved for schematic draft.
-- Start KiCad schematic draft only after governance release.
+- Perform final consistency review for Architecture RevA v0.1.
+- If approved, mark Architecture RevA v0.1 as Frozen.
+- Keep KiCad schematic status as `Not released` until governance release.
+- Start KiCad schematic draft only after architecture freeze and explicit governance release.

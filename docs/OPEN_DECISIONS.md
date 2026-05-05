@@ -119,48 +119,84 @@ Governance / embedded hardware.
 
 ## O3 — Logic-Level N-Channel MOSFET Part Number
 
-**Status:** Open
+**Status:** Frozen
 
-### Question
+### Decision
 
-Which N-channel MOSFET should be used for the low-side output stage?
+Use `AO3400A` as the primary N-channel MOSFET for the RevA low-side output stage.
 
-### Requirements
+### Frozen RevA Definition
 
-The MOSFET should support:
+- Reference designator: `Q1`
+- Primary part number: `AO3400A`
+- Type: N-channel MOSFET
+- Package: SOT-23
+- Function: low-side load switch
+- Load target: up to 12 V / 1 A
+- Gate drive: ESP32 `GPIO26` at 3.3 V
+- Gate net: `MOSFET_GATE`
+- Switched load net: `LOAD_SW`
 
-- Load voltage up to 12 V.
-- Load current up to 1 A.
-- Gate drive from ESP32 GPIO at 3.3 V.
-- Low enough RDS(on) at VGS = 2.5 V or 3.3 V.
-- Package suitable for hand assembly or realistic PCB assembly.
-- Availability from common suppliers.
+### Equivalent Part Requirement
 
-### Why this matters
+An equivalent MOSFET may be used only if it satisfies:
 
-Not every MOSFET that is called “logic-level” works well at 3.3 V gate drive.
+- N-channel MOSFET.
+- `VDS ≥ 30 V`.
+- `RDS(on)` specified at `VGS ≤ 2.5 V`.
+- Suitable thermal behavior for 1 A load switching.
+- Package suitable for RevA assembly and PCB layout.
 
-The selected MOSFET must switch reliably with an ESP32 output pin and avoid excessive heating at the target current.
+Preferred wording:
 
-### Required Output
+```text
+AO3400A or equivalent N-channel MOSFET with VDS ≥ 30 V and RDS(on) specified at VGS ≤ 2.5 V.
+```
 
-Before schematic finalization, document:
+### Power Dissipation Check
 
-- MOSFET part number.
-- Package.
-- VDS rating.
-- Continuous drain current rating.
-- RDS(on) at VGS = 2.5 V or 3.3 V.
-- Thermal considerations for 1 A load.
-- Availability.
+Using the AO3400A worst-case `RDS(on)` at low gate voltage:
 
-### Current Direction
+```text
+P = I² · R
+P = 1² · 0.048
+P = 48 mW
+```
 
-Select a common N-channel MOSFET with documented low RDS(on) at 2.5 V or 3.3 V gate drive.
+This dissipation is low for the target RevA load of 1 A, assuming reasonable copper area around the MOSFET power pins and operation within the documented load limit.
+
+### Required Support Components
+
+The MOSFET stage shall include:
+
+- `100 Ω` series resistor between GPIO26 and `MOSFET_GATE`.
+- `100 kΩ` pulldown resistor from `MOSFET_GATE` to GND.
+- Flyback diode for inductive loads.
+- Optional/DNP MOSFET output LED footprint.
+
+### Rationale
+
+The AO3400A is appropriate for RevA because it is a compact SOT-23 N-channel MOSFET with sufficient voltage margin for a 12 V load and low `RDS(on)` specified at low gate voltage.
+
+This makes it suitable for direct 3.3 V GPIO-controlled low-side switching in the ESP32 carrier board.
+
+### Avoided Parts
+
+The following MOSFETs are not recommended for this RevA output stage:
+
+- `IRFZ44N`
+- `IRF540N`
+- `2N7002`
+- `BSS138`
+- `BS170`
+
+Reason:
+
+These parts are either oversized/older devices intended for higher gate drive, or too small for a professional 1 A load-switching output with comfortable margin.
 
 ### Owner
 
-Technical decision / component selection.
+Governance / component selection.
 
 ---
 
@@ -270,7 +306,7 @@ Governance / hardware architecture.
 |---|---|---|---|
 | O1 | ESP32 DevKit 30-pin footprint strategy | Frozen | Generic 30-pin DevKit footprint with documented compatibility limitation |
 | O2 | MOSFET gate GPIO | Frozen | GPIO26 with 100 Ω gate resistor and 100 kΩ pulldown |
-| O3 | Logic-level N-channel MOSFET part number | Open | Select MOSFET with low RDS(on) at 3.3 V |
+| O3 | Logic-level N-channel MOSFET part number | Frozen | AO3400A or equivalent, VDS ≥ 30 V, RDS(on) specified at VGS ≤ 2.5 V |
 | O4 | Load connector type | Frozen | 2-pin 5.08 mm terminal block / KRE |
 | O5 | MOSFET output LED strategy | Frozen | Optional/DNP footprint |
 
@@ -278,27 +314,27 @@ Governance / hardware architecture.
 
 ## Architecture Freeze Requirement
 
-## Architecture Freeze Requirement
-
-Architecture RevA v0.1 should not be marked as Frozen until:
-
-- O1 is frozen. ✅
-- O2 is frozen. ✅
-- O3 is resolved or approved for draft schematic.
-- O4 is frozen. ✅
-- O5 is frozen. ✅
+Architecture RevA v0.1 may now be marked as Frozen after final consistency review, because all tracked RevA open decisions have been resolved.
 
 Current freeze progress:
 
 ```text
 O1 — Frozen
 O2 — Frozen
+O3 — Frozen
 O4 — Frozen
 O5 — Frozen
-O3 — Open
+```
 
-Current architecture state:
+Current architecture state before final review:
 
+```text
 Architecture RevA v0.1 — Ready for Freeze Review
 KiCad schematic — Not released
+```
+
+Next governance action:
+
+```text
+Perform final consistency review and then freeze Architecture RevA v0.1.
 ```
