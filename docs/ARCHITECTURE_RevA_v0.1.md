@@ -216,6 +216,8 @@ A test point for 5 V is mandatory.
 
 ### Function
 
+Host the ESP32 DevKit module and expose its power and signal pins to the carrier board.
+
 The ESP32 DevKit acts as the main controller of the carrier board.
 
 It provides:
@@ -227,33 +229,44 @@ It provides:
 - MOSFET gate control signal.
 - 3.3 V logic rail output for external low-current logic use.
 
-### Requirements
+### Frozen Footprint Strategy
 
-- ESP32 DevKit 30-pin format.
-- Headers compatible with common 30-pin ESP32 development boards.
-- 3V3 comes from the ESP32 DevKit.
-- 5 V is supplied from the board buck converter to the ESP32 DevKit.
+RevA uses a generic 30-pin ESP32 DevKit footprint strategy with documented compatibility limitation.
 
-### Open Decision
+Frozen definition:
 
-The exact ESP32 DevKit mechanical and pinout model is still open.
+- Target module type: ESP32 DevKit-style development board.
+- Pin count: 30 pins.
+- Header strategy: two 1x15 female headers.
+- Compatibility scope: limited to DevKit boards matching the selected 30-pin header spacing, pinout and mechanical envelope.
+- 30-pin and 38-pin DevKit boards will not be supported on the same RevA PCB.
+- Silkscreen must clearly indicate module orientation.
+- A visible antenna keepout region should be marked whenever possible.
+- Exact module mechanical dimensions and pinout must be confirmed before fabrication.
 
-Before schematic and footprint finalization, the project must select one reference board and document:
+### Fabrication Warning
 
-- Pin count.
-- Header spacing.
-- Board width.
-- Pin names.
-- 5 V input pin.
-- 3V3 output pin.
-- GND pins.
-- Boot/strapping pins to avoid for the MOSFET gate.
+Client must confirm the exact ESP32 DevKit mechanical dimensions and pinout before fabrication.
 
-### Initial Implementation Direction
+### Design Notes
 
-Use a generic dual-header 30-pin ESP32 DevKit footprint only after confirming compatibility with the selected physical board.
+The ESP32 DevKit family has many low-cost variants with different mechanical dimensions, header spacing, pin naming and USB connector placement.
 
----
+For RevA, the board will not attempt to support every ESP32 DevKit variant available in the market.
+
+This strategy keeps the PCB scope controlled and makes the compatibility limitation explicit before fabrication.
+
+### Interfaces
+
+The ESP32 DevKit block connects to:
+
+- 5 V rail input.
+- 3V3 logic rail output.
+- GND.
+- I2C connector.
+- UART connector.
+- GPIO connector.
+- MOSFET gate control signal.
 
 ## 7. 5 V, 3V3 and GND Rails
 
@@ -612,11 +625,11 @@ Mounting hole diameter and keepout must be selected before layout.
 
 ## 14. Open Decisions
 
-The following decisions must remain visible until resolved.
+The following decisions must remain visible until resolved or frozen.
 
 | ID | Decision | Current Status | Recommended Direction |
 |---|---|---|---|
-| O1 | Exact ESP32 DevKit 30-pin model | Open | Select one common reference board before footprint finalization |
+| O1 | ESP32 DevKit 30-pin footprint strategy | Frozen | Generic 30-pin DevKit footprint with documented compatibility limitation |
 | O2 | GPIO for MOSFET gate | Open | Use safe GPIO, avoid boot/strapping pins |
 | O3 | Exact MOSFET part number | Open | N-channel logic-level MOSFET with low RDS(on) at VGS = 3.3 V |
 | O4 | Load connector type | Frozen | 2-pin 5.08 mm terminal block / KRE |
@@ -686,21 +699,20 @@ Freeze review progress:
 
 | Decision | Status |
 |---|---|
-| O1 — Exact ESP32 DevKit 30-pin model | Open |
+| O1 — ESP32 DevKit 30-pin footprint strategy | Frozen |
 | O2 — GPIO for MOSFET gate | Open |
 | O3 — Exact MOSFET part number | Open |
 | O4 — Load connector type | Frozen |
 | O5 — MOSFET output LED | Frozen |
 
-Architecture RevA v0.1 should only be marked as Frozen after O1, O2 and O3 are resolved or explicitly approved by governance for schematic draft.
-
+Architecture RevA v0.1 should only be marked as Frozen after O2 and O3 are resolved or explicitly approved by governance for schematic draft.
 ---
 
 ## 17. Next Actions
 
-- Select the exact ESP32 DevKit 30-pin reference.
 - Select a safe GPIO for MOSFET gate control.
 - Select candidate N-channel logic-level MOSFET.
 - Keep architecture status as `Ready for Freeze Review`.
-- After O1, O2 and O3 are resolved or approved for draft schematic, freeze architecture as `ARCHITECTURE_RevA_v0.1.md`.
+- Keep KiCad schematic status as `Not released`.
+- Freeze architecture only after O2 and O3 are resolved or approved for schematic draft.
 - Start KiCad schematic draft only after governance release.
