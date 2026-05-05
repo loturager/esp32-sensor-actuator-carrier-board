@@ -1,0 +1,14 @@
+# KiCad backups and temporary files
+*-backups/
+*.bak
+*.kicad_sch-bak
+*.kicad_pcb-bak
+fp-info-cache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+*.swp
