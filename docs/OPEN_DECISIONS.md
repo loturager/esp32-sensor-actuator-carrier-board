@@ -162,47 +162,55 @@ Technical decision / component selection.
 
 ## O4 — Load Connector Type
 
-**Status:** Proposed
+**Status:** Frozen
 
-### Question
+### Decision
 
-Which connector should be used for the external load output?
+Use a 2-pin terminal block / KRE connector with 5.08 mm pitch for the external load output.
 
-### Proposed Decision
+### Frozen RevA Definition
 
-Use a 2-pin terminal block with 5.08 mm pitch.
+- Connector type: terminal block / KRE.
+- Number of pins: 2.
+- Pitch: 5.08 mm.
+- Intended use: external load connection.
+- Electrical target: up to 12 V / 1 A.
+- Required current rating: at least 1 A.
+- Preferred current rating: above 1 A for margin.
+- Footprint strategy: use a common 2-pin 5.08 mm terminal block footprint or compatible equivalent.
 
-### Suggested Pinout
+### Pinout
 
 ```text
 1 — LOAD+
-2 — LOAD-
+2 — LOAD_SW
 ```
 
-Where:
+### Net Meaning
 
 - `LOAD+` is connected to the protected VIN/load supply path.
-- `LOAD-` is switched by the MOSFET drain.
+- `LOAD_SW` is the switched low-side node connected to the MOSFET drain.
 
-### Why this matters
+### Silkscreen Recommendation
 
-The load connector must be suitable for repeated prototyping and external wiring.
+The connector may be labeled on silkscreen as:
 
-A 5.08 mm terminal block is easy to use, easy to understand and suitable for low-voltage loads in a prototype board.
+```text
+LOAD+
+LOAD-
+```
 
-### Required Output
+However, the schematic net name for the switched node should preferably be `LOAD_SW` to make the MOSFET switching function clear.
 
-To freeze this decision, confirm:
+### Justification
 
-- Connector type.
-- Pitch.
-- Pinout.
-- Current rating.
-- Footprint family.
+A 2-pin 5.08 mm terminal block is common, inexpensive, robust, easy to assemble and suitable for external wiring in simple industrial/IoT prototyping applications.
 
-### Current Direction
+This connector style is appropriate for the RevA target load of up to 12 V / 1 A and keeps the board easy to understand, test and document.
 
-2-pin 5.08 mm terminal block.
+### Impact
+
+This decision does not depend on the exact ESP32 DevKit model, MOSFET GPIO or MOSFET part number.
 
 ### Owner
 
@@ -212,34 +220,39 @@ Governance / hardware architecture.
 
 ## O5 — MOSFET Output LED Population Strategy
 
-**Status:** Proposed
+**Status:** Frozen
 
-### Question
+### Decision
 
-Should the MOSFET output LED be populated by default or included only as an optional/DNP footprint?
+Include a MOSFET output indicator LED footprint as optional / DNP.
 
-### Proposed Decision
+### Frozen RevA Definition
 
-Include the MOSFET output LED footprint as optional/DNP.
+- Output LED footprint: included.
+- Default population status: DNP.
+- Required for electrical operation: no.
+- Purpose: debug, validation and visual indication of output activity.
+- BOM status: listed as DNP unless intentionally populated.
+- Final connection point: to be defined during schematic implementation so that it does not interfere with the load behavior.
 
-### Why this matters
+### Justification
 
-An output LED can help during debugging, but it should not interfere with the load behavior or make the output stage harder to interpret.
+The MOSFET output LED improves testability and makes bench validation easier, especially when demonstrating the board as a portfolio project.
 
-Keeping the LED as optional/DNP gives flexibility without forcing it into the RevA behavior.
+Keeping the LED as optional/DNP avoids forcing extra current consumption or unintended interaction with the external load path.
 
-### Required Output
+This gives RevA a professional debug feature without making it mandatory for the core electrical function.
 
-To freeze this decision, confirm:
+### Impact
 
-- LED included or removed.
-- Default population status.
-- Whether it appears in BOM as DNP.
-- Connection point.
+This decision does not block schematic planning.
 
-### Current Direction
+During schematic capture, the LED circuit must be implemented so that:
 
-Include footprint, default DNP.
+- It does not affect MOSFET gate behavior.
+- It does not significantly load the switched output node.
+- It is clearly marked as optional/DNP.
+- It is documented in the BOM as DNP by default.
 
 ### Owner
 
@@ -254,8 +267,8 @@ Governance / hardware architecture.
 | O1 | Exact ESP32 DevKit 30-pin reference | Open | Select common 30-pin DevKit reference |
 | O2 | GPIO for MOSFET gate control | Open | Select safe output GPIO |
 | O3 | Logic-level N-channel MOSFET part number | Open | Select MOSFET with low RDS(on) at 3.3 V |
-| O4 | Load connector type | Proposed | 2-pin 5.08 mm terminal block |
-| O5 | MOSFET output LED strategy | Proposed | Optional/DNP footprint |
+| O4 | Load connector type | Frozen | 2-pin 5.08 mm terminal block / KRE |
+| O5 | MOSFET output LED strategy | Frozen | Optional/DNP footprint |
 
 ---
 
@@ -266,11 +279,22 @@ Architecture RevA v0.1 should not be marked as Frozen until:
 - O1 is resolved or approved for draft schematic.
 - O2 is resolved or approved for draft schematic.
 - O3 is resolved or approved for draft schematic.
-- O4 is frozen.
-- O5 is frozen.
+- O4 is frozen. ✅
+- O5 is frozen. ✅
 
-Until then, the architecture remains:
+Current freeze progress:
 
 ```text
-Architecture RevA v0.1 — Draft / Ready for Freeze Review
+O4 — Frozen
+O5 — Frozen
+O1 — Open
+O2 — Open
+O3 — Open
+```
+
+Current architecture state:
+
+```text
+Architecture RevA v0.1 — Ready for Freeze Review
+KiCad schematic — Not released
 ```
