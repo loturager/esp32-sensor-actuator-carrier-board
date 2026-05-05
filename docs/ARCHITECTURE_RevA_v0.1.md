@@ -3,9 +3,9 @@
 ## Project: ESP32 Sensor/Actuator Carrier Board
 
 **Revision:** RevA v0.1  
-**Status:** Ready for Freeze Review  
+**Status:** Frozen  
 **Previous phase:** Requirements RevA v0.1 frozen  
-**Current phase:** Block Architecture  
+**Current phase:** Architecture frozen / schematic draft released  
 **Next phase:** KiCad schematic capture  
 
 ---
@@ -683,11 +683,11 @@ Mounting hole diameter and keepout must be selected before layout.
 
 ---
 
-## 14. Open Decisions
+## 14. Frozen Decisions
 
-The following decisions must remain visible until resolved or frozen.
+All RevA architecture-level open decisions have been resolved.
 
-| ID | Decision | Current Status | Recommended Direction |
+| ID | Decision | Status | Frozen Direction |
 |---|---|---|---|
 | O1 | ESP32 DevKit 30-pin footprint strategy | Frozen | Generic 30-pin DevKit footprint with documented compatibility limitation |
 | O2 | MOSFET gate GPIO | Frozen | GPIO26 with 100 Ω gate resistor and 100 kΩ pulldown |
@@ -699,53 +699,54 @@ The following decisions must remain visible until resolved or frozen.
 
 ## 15. Criteria to Release KiCad Schematic Capture
 
-The schematic phase may start only when the following criteria are satisfied.
+The criteria to release KiCad schematic capture have been satisfied for draft schematic work.
 
-### Mandatory Before Schematic
+### Release Status
+
+```text
+KiCad schematic — Released for Draft Schematic
+PCB layout — Not released
+Fabrication — Not released
+```
+
+### Satisfied Conditions
 
 - Requirements RevA v0.1 are frozen.
-- This architecture document exists.
+- Architecture RevA v0.1 is frozen.
 - Block list is accepted.
 - Power flow is clear:
   - VIN -> Protection -> Buck -> 5 V -> ESP32.
   - VIN -> Load path -> MOSFET -> GND.
-- ESP32 DevKit 30-pin footprint strategy is frozen with documented compatibility limitation.
-- MOSFET output topology is confirmed as low-side N-channel.
+- ESP32 DevKit 30-pin strategy is frozen as a generic footprint with documented compatibility limitation.
+- MOSFET output topology is frozen as low-side N-channel.
 - MOSFET gate GPIO is frozen as GPIO26.
-- MOSFET part number is frozen as AO3400A or approved equivalent.
-- MOSFET gate drive interface is defined with 100 Ω series resistor and 100 kΩ pulldown.
+- MOSFET part number is frozen as AO3400A or equivalent.
 - Load connector type is frozen.
 - Test point list is accepted.
 - Power LED is mandatory.
-- MOSFET output LED status is frozen as optional/DNP.
-- KiCad schematic remains not released until governance approval.
+- MOSFET output LED is frozen as optional/DNP.
 
-### Strongly Recommended Before Schematic
+### Important Limitation
 
-- Candidate buck module footprint selected.
-- Connector families selected.
-- Mounting hole size selected.
-- Basic silkscreen naming convention defined.
+This release applies only to draft schematic capture.
 
-### KiCad Schematic May Begin When
+It does not release:
 
-The following items are marked as either Frozen or Approved for Draft Schematic:
+- PCB layout.
+- Fabrication.
+- Gerber files.
+- PCB purchase.
+- Physical validation.
 
-| Item | Required Status |
-|---|---|
-| ESP32 DevKit footprint strategy | Frozen |
-| Buck module interface | Frozen |
-| MOSFET topology | Frozen |
-| MOSFET gate GPIO | Frozen |
-| MOSFET part number | Frozen |
-| Load connector | Frozen |
-| I2C connector pinout | Frozen |
-| UART connector pinout | Frozen |
-| GPIO connector strategy | Approved |
-| Test points | Frozen |
-| LED strategy | Frozen |
-| Mounting holes | Approved |
-| Governance release for KiCad schematic | Required |
+Before fabrication, the project must still complete:
+
+- Full schematic capture.
+- ERC review.
+- Footprint assignment review.
+- ESP32 DevKit mechanical and pinout confirmation.
+- PCB layout.
+- DRC review.
+- Gerber review.
 
 ---
 
@@ -755,12 +756,15 @@ Current architecture status:
 
 | Item | Status |
 |---|---|
-| Architecture RevA v0.1 | Ready for Freeze Review |
-| Ready for review | Yes |
-| Ready to freeze | After final consistency review |
-| Ready for KiCad schematic | Not yet |
+| Architecture RevA v0.1 | Frozen |
+| Ready for schematic draft | Yes |
+| Ready for PCB layout | No |
+| Ready for fabrication | No |
+| KiCad schematic | Released for Draft Schematic |
+| PCB layout | Not released |
+| Fabrication | Not released |
 
-Freeze review progress:
+Freeze review result:
 
 | Decision | Status |
 |---|---|
@@ -770,13 +774,38 @@ Freeze review progress:
 | O4 — Load connector type | Frozen |
 | O5 — MOSFET output LED | Frozen |
 
-Architecture RevA v0.1 is ready for final consistency review before being marked as Frozen.
+Architecture RevA v0.1 is frozen for schematic capture.
+
+Any future change to O1–O5 must be treated as a revision change or documented engineering change.
 
 ---
 
 ## 17. Next Actions
 
-- Perform final consistency review for Architecture RevA v0.1.
-- If approved, mark Architecture RevA v0.1 as Frozen.
-- Keep KiCad schematic status as `Not released` until governance release.
-- Start KiCad schematic draft only after architecture freeze and explicit governance release.
+The architecture phase is complete.
+
+Next project phase:
+
+```text
+Phase 2 — KiCad Schematic Capture
+```
+
+Immediate schematic tasks:
+
+- Create the KiCad project structure.
+- Add ESP32 DevKit 30-pin headers.
+- Add VIN input connector.
+- Add input protection block.
+- Add adjustable buck module interface.
+- Add 5 V, 3V3 and GND rails.
+- Add I2C, UART and GPIO connectors.
+- Add AO3400A low-side MOSFET output.
+- Add gate resistor and gate pulldown.
+- Add flyback diode for inductive loads.
+- Add power LED.
+- Add optional/DNP MOSFET output LED footprint.
+- Add required test points.
+- Run ERC.
+- Submit schematic for technical review before PCB layout.
+
+Fabrication remains blocked until schematic, footprint, ERC, layout and DRC reviews are complete.

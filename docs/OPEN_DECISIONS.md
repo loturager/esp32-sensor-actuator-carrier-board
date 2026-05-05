@@ -55,7 +55,7 @@ This avoids overpromising universal support and keeps the board scope controlled
 
 This decision allows the architecture to progress while keeping fabrication responsibility clear.
 
-It does not resolve the MOSFET GPIO selection or the MOSFET part number.
+It does not change the schematic, layout or fabrication release status by itself.
 
 ### Owner
 
@@ -314,7 +314,7 @@ Governance / hardware architecture.
 
 ## Architecture Freeze Requirement
 
-Architecture RevA v0.1 may now be marked as Frozen after final consistency review, because all tracked RevA open decisions have been resolved.
+Architecture RevA v0.1 may be marked as Frozen because all tracked RevA open decisions have been resolved.
 
 Current freeze progress:
 
@@ -326,15 +326,29 @@ O4 — Frozen
 O5 — Frozen
 ```
 
-Current architecture state before final review:
+Current architecture state:
 
 ```text
-Architecture RevA v0.1 — Ready for Freeze Review
-KiCad schematic — Not released
+Architecture RevA v0.1 — Frozen
+KiCad schematic — Released for Draft Schematic
+PCB layout — Not released
+Fabrication — Not released
 ```
 
-Next governance action:
+### Schematic Release Note
 
-```text
-Perform final consistency review and then freeze Architecture RevA v0.1.
-```
+The KiCad schematic may now begin as a draft schematic.
+
+Fabrication is still not released.
+
+PCB layout is still not released.
+
+Before fabrication, the project must still complete:
+
+- Full schematic capture.
+- ERC review.
+- Footprint assignment review.
+- ESP32 DevKit mechanical and pinout confirmation.
+- PCB layout.
+- DRC review.
+- Gerber review.
